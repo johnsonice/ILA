@@ -1,18 +1,41 @@
 # ILA – Intelligent Language Agents for IMF Surveillance
 
-ILA (Intelligent Language Agents) is a lightweight GenAI toolkit that helps IMF economists and analysts turn raw text (news articles, reports, social-media posts, …) into machine-readable signals in minutes – not weeks.
+<p align="center">
+  <img src="https://img.shields.io/badge/Python-3.10%20%7C%203.11-blue?logo=python" alt="python version" />
+  <img src="https://img.shields.io/badge/Status-Alpha-orange" alt="project status" />
+  <img src="https://img.shields.io/badge/License-MIT-green" alt="license" />
+</p>
 
-The repo bundles reusable libraries, prompt templates, and ready-made pipelines so you can:
+<blockquote align="center">
+  ⚡ *Turn raw text into machine-readable economic signals in minutes – not weeks.* ⚡
+</blockquote>
 
-* 🔌 Query a variety of Large Language Models (LLMs) through one unified interface (OpenAI, Google Gemini, Anthropic Claude, or any OpenAI-compatible endpoint such as **sgLang**, **Groq**, **Together**, etc.).
-* 🗂️ Receive *structured* responses with type guarantees thanks to Pydantic models.
-* ⚡ Run thousands of requests **asynchronously** for high-throughput inference or RAG workloads.
-* 📄 Manage prompts as markdown files with YAML front-matter – perfect for version-controlling prompt engineering.
+## 📑 Table of Contents
+
+- [✨ Features](#-features)
+- [🗂️ Project Structure](#️-project-structure)
+- [🚀 Installation](#-installation)
+- [🛠️ Usage Examples](#-usage-examples)
+  - [Unified LLM Interface](#1-unified-llm-interface)
+  - [Structured Outputs](#2-structured-outputs)
+  - [Batch Async Inference](#3-batch-async-inference-against-a-local-sglang-server)
+- [📦 Built-in Tasks](#-built-in-tasks-prompt-registry)
+- [⚡ Generic Multi-task Pipeline](#-generic-multi-task-pipeline)
+- [⏱️ Rule-based Metadata Extraction](#️-rule-based-metadata-extraction-optional)
+
+---
+
+## ✨ Features
+
+* 🔌 Query multiple LLM providers through **one** unified API (OpenAI, Google Gemini, Anthropic Claude, or any OpenAI-compatible endpoint such as **sgLang**, **Groq**, **Together**, …).
+* 🗂️ Receive *structured* responses with type guarantees powered by **Pydantic** models.
+* ⚡ Fire off thousands of requests **asynchronously** for high-throughput inference & RAG workloads.
+* 📄 Manage prompts as Markdown files with YAML front-matter – ideal for version-controlled prompt engineering.
 * 🛠️ Chain everything together in self-documenting Python pipelines (e.g. country extraction from Factiva news).
 
 ---
 
-## Quick tour
+### 🗂️ Project Structure
 
 | Folder | What lives here |
 | ------ | --------------- |
