@@ -36,7 +36,7 @@ class TenseExtractionResponse(BaseModel):
     tense: str = Field(
         ...,
         description="Temporal context of the sentence: Past, Present, or Future.",
-        regex="^(Past|Present|Future)$",
+        pattern="^(Past|Present|Future)$",
         max_length=20,
     )
 class ProductCategoriesResponse(BaseModel):
@@ -62,7 +62,7 @@ class MeasureNatureResponse(BaseModel):
     result: str = Field(
         ...,
         description="Nature of the measure: Liberalising, Distortive, or Other.",
-        regex="^(Liberalising|Distortive|Other)$",
+        pattern="^(Liberalising|Distortive|Other)$",
         max_length=40,
     )
 class TimelineExtractionResponse(BaseModel):

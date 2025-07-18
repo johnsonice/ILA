@@ -17,8 +17,8 @@ The repo bundles reusable libraries, prompt templates, and ready-made pipelines 
 | Folder | What lives here |
 | ------ | --------------- |
 | `libs/` | Core reusable libraries (LLM factories, utilities, prompt helpers) |
-| `src/`  | End-to-end pipelines & CLI scripts – see `extract_country_name.py` for a complete example |
-| `prompts/` | Prompt templates with `## system` / `## user` sections and optional `schema` |
+| `src/`  | End-to-end pipelines & CLI scripts – e.g. `run_llm_article_level.py` (generic multi-task pipeline) and `extract_country_name.py` (legacy standalone) |
+| `prompts/` | Prompt templates **plus** `schemas.py` registry that maps each prompt to a Pydantic response model |
 | `examples/` | Minimal, runnable examples – start here if you are new to the codebase |
 | `test/` | PyTest suites covering the public API |
 | `notebook/` | Jupyter notebooks that illustrate typical workflows |
@@ -125,3 +125,68 @@ python src/extract_country_name.py \
   --output_dir /tmp/ila_results \
   --n_jobs 4
 ```
+
+---
+
+## Built-in tasks (prompt registry)
+
+The file `prompts/schemas.py` maintains a single **source of truth** linking each
+Markdown prompt template to its response schema.  The keys below can be passed
+to the `--task` flag of the generic pipeline:
+
+| Task ID | Template | Response model |
+|---------|----------|----------------|
+| `country_identification` | `extract_country_name.md` | `CountryIdentificationResponse` |
+| `sentiment_analysis_basic` | `sentiment_analysis_basic.md` | `SentimentAnalysisResponse` |
+| `sentiment_analysis_chain_of_thought` | `sentiment_analysis_cot.md` | `SentimentAnalysisResponse` |
+| `sentiment_analysis_few_shot` | `sentiment_analysis_few_shot.md` | `SentimentAnalysisResponse` |
+| `tense_extraction` | `tense_extraction.md` | `TenseExtractionResponse` |
+| `product_categories` | `product_categories.md` | `ProductCategoriesResponse` |
+| `stated_motive` | `stated_motive.md` | `StatedMotiveResponse` |
+| `broad_policy_categories` | `broad_categories.md` | `BroadPolicyCategoriesResponse` |
+| `measure_nature` | `measure_nature.md` | `MeasureNatureResponse` |
+| `timeline_extraction` | `timeline.md` | `TimelineExtractionResponse` |
+| `intervention_type` | `intervention_type.md` | `InterventionTypeResponse` |
+
+---
+
+## Generic multi-task pipeline
+
+`src/run_llm_article_level.py` is a **single CLI** that can run *any* of the
+prompt-schema pairs listed above in batched, asynchronous mode.  It takes care
+of loading the template, inserting the article text, enforcing the schema and
+writing one JSON result file per input JSON.
+
+Example:
+
+```bash
+python src/run_llm_article_level.py \
+  --task sentiment_analysis_basic \
+  --data_dir /path/to/articles_json/ \
+  --output_dir /tmp/ila_results/ \
+  --batch_size 64 \
+  --max_tokens 1024
+```
+
+The script uses `libs.llm_factory_openai.BatchAsyncLLMAgent` under the hood but
+can be pointed at **any OpenAI-compatible endpoint** (sgLang, Groq, Together,
+local LM Studio, …) by tweaking the `local_model_args` dictionary in the file
+or passing environment variables.
+
+---
+
+## Rule-based metadata extraction (optional)
+
+If you just need **quick metadata** such as country mentions or human-readable
+dates – without paying for LLM calls – run:
+
+```bash
+python src/extract_meta.py \
+  --data_dir /path/to/articles_json/ \
+  --output_file /tmp/ila_metadata.csv
+```
+
+Behind the scenes this leverages regex patterns from `libs/meta_utils.py` and a
+comprehensive country dictionary to tag articles at **O(μs)** per document.
+
+---
