@@ -9,4 +9,4 @@ python "${PY_SCRIPT}" \
 --jobs 1 \
 --sub_jobs 16 \
 --task_id rulebased_tagging \
---run_tests
+#--run_tests
