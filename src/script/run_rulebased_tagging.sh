@@ -10,3 +10,6 @@ python "${PY_SCRIPT}" \
 --sub_jobs 16 \
 --task_id rulebased_tagging \
 #--run_tests
+
+## in fund machine
+# python run_rulebased_tagging.py --data_dir //data2/CommercialData/Factiva_Repository/2025 --output_dir "Q:/DATA/SPRAI/Chengyu Huang/8_Data_Science/Factiva_News_Project/data/results" --jobs 1 --sub_jobs 8 --task_id rulebased_tagging

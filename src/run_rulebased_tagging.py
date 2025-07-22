@@ -101,7 +101,7 @@ def process_directory(
 ):
     """Process all JSON files in directory and extract metadata using parallel processing"""
     data_dir = Path(data_dir)
-    json_files = list(data_dir.glob("*.json"))
+    json_files = list(data_dir.rglob("*.json"))
     
     def process_single_file(file_path,export_dir=export_dir,
                             task_id=task_id,return_df=return_df,
