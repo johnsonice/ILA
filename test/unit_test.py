@@ -19,15 +19,15 @@ libs_dir = os.path.join(os.path.dirname(current_dir), 'libs')
 if libs_dir not in sys.path:
     sys.path.insert(0, libs_dir)
 # Load environment variables
-load_dotenv('../../.env')
-
+load_dotenv('../.env')
 # Import SimpleLLMAgent from libs directory
-from llm_factory_openai import SimpleLLMAgent
+from llm_factory_openai import LLMAgent
 
+#%%
 def unit_test_structured_output():
     """Test structured output with Pydantic models."""
     try:
-        agent = SimpleLLMAgent()
+        agent = LLMAgent()
         print("✅ SimpleLLMAgent initialized successfully")
     except Exception as e:
         print(f"❌ Failed to initialize SimpleLLMAgent: {e}")
@@ -94,7 +94,7 @@ def unit_test_structured_output():
         
         response_json = agent.get_response_content(messages_json, response_format={"type": "json_object"})
         parsed_data = agent.parse_json(response_json)
-        capitals_data = CapitalsResponse.model_validate(parsed_data)
+        capitals_data = CapitalsResponse.validate(parsed_data)
         
         print("✅ JSON parsing response successful:")
         for capital in capitals_data.capitals:
