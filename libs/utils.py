@@ -1,5 +1,7 @@
 import os
 import pathlib
+from pathlib import Path
+import sys
 import ujson as json
 import re
 import gzip
@@ -7,12 +9,12 @@ import json
 import pickle
 from huggingface_hub import hf_hub_download
 from huggingface_hub import snapshot_download
+
 # from dotenv import load_dotenv
 # env_path = '../../.env'
 # load_dotenv(dotenv_path=env_path)
 
 #%%
-
 def download_hf_model(REPO_ID, save_location, hf_token=None):
     # REPO_ID = "meta-llama/Meta-Llama-3-8B-Instruct"
     # save_location = '/root/data/hf_cache/llama-3-8B-Instruct'
@@ -140,3 +142,60 @@ def merge_dict_keys(org_dict:dict):
             merged_dict[k] = org_dict[k]
     return merged_dict
 
+def filter_unprocessed_files(json_files, export_dir, task_id, verbose=True):
+    """
+    Filter out JSON files that have already been processed based on existing output files.
+    
+    This function looks for output files that contain the task_id anywhere in their filename
+    and extracts the original stem by removing the task_id and any suffix after it.
+    
+    Parameters:
+        json_files (list): List of Path objects for JSON files to process
+        export_dir (str or Path): Directory containing processed output files
+        task_id (str): Task identifier used in output filenames
+        verbose (bool): Whether to print filtering information
+    
+    Returns:
+        list: Filtered list of JSON files that haven't been processed yet
+    """
+    if not export_dir or not task_id:
+        return json_files
+    
+    export_dir_path = Path(export_dir)
+    if not export_dir_path.exists():
+        return json_files
+    
+    # Get existing output files that contain the task_id
+    existing_csv_files = set(export_dir_path.glob(f"*{task_id}*.csv"))
+    existing_json_files = set(export_dir_path.glob(f"*{task_id}*.json"))
+    
+    # Extract base names from existing files
+    processed_stems = set()
+    for existing_file in existing_csv_files.union(existing_json_files):
+        base_name = existing_file.stem
+        
+        # Find the position of task_id in the filename
+        task_id_pos = base_name.find(f"_{task_id}")
+        if task_id_pos != -1:
+            # Extract everything before _{task_id}
+            original_stem = base_name[:task_id_pos]
+            processed_stems.add(original_stem)
+        else:
+            # Handle cases where task_id might not have underscore prefix
+            task_id_pos = base_name.find(task_id)
+            if task_id_pos != -1:
+                # Extract everything before task_id
+                original_stem = base_name[:task_id_pos].rstrip('_')
+                processed_stems.add(original_stem)
+    
+    # Filter json_files to only include unprocessed files
+    unprocessed_files = []
+    for json_file in json_files:
+        if json_file.stem not in processed_stems:
+            unprocessed_files.append(json_file)
+    
+    if verbose:
+        print(f"Found {len(processed_stems)} already processed files")
+        print(f"Remaining {len(unprocessed_files)} files to process")
+    
+    return unprocessed_files

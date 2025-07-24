@@ -16,6 +16,7 @@ from libs.utils import read_json
 from libs.meta_utils import construct_country_group_rex, tag_country
 from libs.country_dict_full import get_dict
 from functools import partial
+from libs.utils import filter_unprocessed_files
 from rule_based_tagging_functions import (
     create_country_tagging,
     extract_text_length,
@@ -102,6 +103,8 @@ def process_directory(
     """Process all JSON files in directory and extract metadata using parallel processing"""
     data_dir = Path(data_dir)
     json_files = list(data_dir.rglob("*.json"))
+    
+    json_files = filter_unprocessed_files(json_files, export_dir, task_id, verbose=True)
     
     def process_single_file(file_path,export_dir=export_dir,
                             task_id=task_id,return_df=return_df,
@@ -200,7 +203,6 @@ def process_directory(
             # Filter out None values for list return
             all_metadata = [item for item in all_metadata if item is not None]
             return all_metadata
-
 
 def unit_test_transformations():
     """Unit test for transformation functions list"""
