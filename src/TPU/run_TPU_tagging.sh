@@ -1,0 +1,2 @@
+## in fund machine
+python TPU_tagging.py --data_dir //data2/CommercialData/Factiva_Repository/2025 --output_dir "Q:/DATA/SPRAI/Chengyu Huang/8_Data_Science/Factiva_News_Project/data/results" --jobs 1 --sub_jobs 8 --task_id tpu_tagging

@@ -203,7 +203,7 @@ class TradeTopicTagger:
         search_content = ' '.join([
             article_copy.get('title', ''),
             article_copy.get('snippet', ''),
-            '.'.join(article_copy.get('body', '.').split('.')[:5])
+            article_copy.get('body', '')
         ]).lower()
         
         matches = self.pattern.findall(search_content)

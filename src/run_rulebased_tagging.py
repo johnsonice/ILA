@@ -17,7 +17,7 @@ from libs.meta_utils import construct_country_group_rex, tag_country
 from libs.country_dict_full import get_dict
 from functools import partial
 from libs.utils import filter_unprocessed_files
-from rule_based_tagging_functions import (
+from src.rule_based_tagging_functions import (
     create_country_tagging,
     extract_text_length,
     transform_dates,

@@ -41,7 +41,7 @@ def tag_country(article,country_rex_dict):
     article is a dict object with title, snip, body and metadata 
     """
     ## look into 3 parts 
-    stand = article.get('body').lower()[:200] if article.get('body') else ''
+    stand = article.get('body').lower()[:300] if article.get('body') else ''
     title = article.get('title').lower() if article.get('title') else ''
     snip= article.get('snippet').lower() if article.get('snippet') else ''
     search_content = '. '.join([title,snip,stand])
