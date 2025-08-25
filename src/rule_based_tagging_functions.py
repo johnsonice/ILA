@@ -51,7 +51,7 @@ def transform_dates(article: Dict[str, Any]) -> Dict[str, Any]:
             except (ValueError, OSError):
                 # Keep original value if conversion fails
                 continue
-                
+    article_copy['ILA_publication_date'] = article_copy.get('publication_date', '') 
     return article_copy
 
 
