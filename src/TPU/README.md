@@ -84,24 +84,15 @@ python TPU_tagging.py \
 ```bash
 cd Q:\DATA\SPRAI\Chengyu Huang\8_Data_Science\Factiva_News_Project\ILA\src\TPU
 python TPU_tagging.py \
-    --data_dir "path/to/factiva/articles" \
-    --output_dir "path/to/results/tpu_tagging" \
-    --jobs 4 \
-    --sub_jobs 16
+    --data_dir //data2/CommercialData/Factiva_Repository/2025 \
+    --output_dir "Q:/DATA/SPRAI/Chengyu Huang/8_Data_Science/Factiva_News_Project/data/results" \
+    --jobs 1 --sub_jobs 8 --task_id tpu_tagging
 ```
 
 ### Step 2: Merge and Aggregate Results
 ```bash
-python TPU_merge_raw_data.py \
-    --input-dirs "path/to/results/metadata" "path/to/results/rulebased_tagging" "path/to/results/tpu_tagging" \
-    --output-dir "path/to/results/merged/TPU"
+python TPU_merge_raw_data.py 
 ```
-
-### Step 3: Run Tests (Optional)
-```bash
-python unit_test/test_tpu_examples.py
-```
-
 ## 📊 Output Format
 
 Each processed article receives the following TPU-related fields:
@@ -109,66 +100,5 @@ Each processed article receives the following TPU-related fields:
 - **`ILA_TPU_Flag`** (boolean): True if TPU pattern detected, False otherwise
 - **`ILA_TPU_Reference`** (string): Reference text (title + snippet + first 5 sentences) where TPU was detected (limited to 500 characters)
 
-## 🔧 Configuration Options
 
-### TPU_tagging.py Parameters:
-- `--data_dir`: Directory containing input JSON files
-- `--output_dir`: Directory for output files
-- `--jobs`: Number of parallel file processing jobs
-- `--sub_jobs`: Number of parallel jobs per file
-- `--strip_text`: Remove body/snippet text from output
-- `--task_id`: Identifier for the processing task
-- `--run_tests`: Execute unit tests before processing
-- `--quiet`: Suppress progress messages
 
-### TPU_merge_raw_data.py Parameters:
-- `--input-dirs`: List of directories containing files to merge
-- `--output-dir`: Output directory for merged files
-- `--skip-merge`: Skip merging step, only aggregate existing files
-
-## 📈 Performance Characteristics
-
-Based on the test suite, the TPU detector demonstrates:
-- **High Precision**: Accurately identifies TPU patterns while minimizing false positives
-- **Good Recall**: Captures various formulations of trade-uncertainty combinations
-- **Robust Handling**: Manages edge cases including punctuation, case variations, and acronyms
-- **Scalable Processing**: Supports parallel processing for large datasets
-
-## 🔗 Integration with ILA Pipeline
-
-The TPU module is designed to integrate seamlessly with the broader ILA (International Legal Analysis) pipeline:
-
-1. **Metadata Extraction**: Works with extracted article metadata
-2. **Rule-based Tagging**: Combines with other rule-based classification tasks
-3. **LLM Processing**: Can be used alongside LLM-based analysis modules
-4. **Result Merging**: Integrates results with other tagging outputs
-
-## 📝 Example TPU Detection Patterns
-
-**Positive Examples** (TPU Detected):
-- "The trade war has created significant uncertainty in global markets"
-- "Import tariffs may cause unpredictable economic volatility"
-- "WTO disputes have led to concerns about future trade policies"
-
-**Negative Examples** (No TPU):
-- "The trade agreement was successfully negotiated" (trade only)
-- "The stock market showed significant volatility" (uncertainty only)
-- "Trade policy experts believe that the current geopolitical environment will continue to generate market volatility" (terms too far apart)
-
-## 🛠️ Technical Requirements
-
-- Python 3.7+
-- Required packages: pandas, pathlib, tqdm, joblib, argparse
-- Access to Factiva JSON article files
-- Sufficient disk space for intermediate and output files
-
-## 📚 Related Documentation
-
-- See `../run_rulebased_tagging.py` for the underlying tagging infrastructure
-- See `../merge_tagged_results.py` for the merging utilities
-- See `../../libs/` for shared utility functions
-- See `../../prompts/` for related analysis schemas
-
----
-
-*This module is part of the ILA (International Legal Analysis) project for analyzing trade policy uncertainty in news articles.*
