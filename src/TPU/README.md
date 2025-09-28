@@ -29,12 +29,6 @@ TPU/
   - Crisis and risk terms (crisis, threat, danger, concerns)
   - Economic instability terms (recession, downturn, fragility)
 - **Co-occurrence Detection**: Uses regex patterns to detect when trade and uncertainty terms appear within 10 words of each other
-- **Text Normalization**: Preserves acronyms (WTO, IMF, etc.) while cleaning text
-
-**Main Methods**:
-- `detect_tpu(text)`: Returns True if TPU pattern is detected
-- `tag(article)`: Tags a full article dictionary with TPU flags and reference text
-- `normalize_text_preserving_acronyms(text)`: Cleans text while preserving important acronyms
 
 ### 2. TPU_tagging.py
 **Purpose**: Main execution script that processes entire directories of Factiva JSON files.
@@ -68,15 +62,6 @@ python TPU_tagging.py \
 - `load_and_aggregate_json_files()`: Aggregates all JSON files into a single DataFrame
 - `_clean_dataframe()`: Performs data cleaning and standardization
 - `_convert_to_datetime()`: Handles various timestamp formats
-
-### 4. unit_test/test_tpu_examples.py
-**Purpose**: Comprehensive test suite that validates TPU detection accuracy across various scenarios.
-
-**Test Categories**:
-- **Positive Examples**: Sentences that should trigger TPU detection (35+ test cases)
-- **Negative Examples**: Sentences that should NOT trigger TPU detection (20+ test cases)
-- **Edge Cases**: Special scenarios including empty strings, punctuation, case sensitivity
-- **Performance Metrics**: Calculates precision, recall, and accuracy
 
 ## 🚀 Quick Start Guide
 
