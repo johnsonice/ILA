@@ -159,20 +159,21 @@ def parse_arguments(args=None):
     
     parser.add_argument('--input-dirs', nargs='+',
                         default=[
+                            "Q:/DATA/SPRAI/Chengyu Huang/8_Data_Science/Factiva_News_Project/data/results/metadata",
                             "Q:/DATA/SPRAI/Chengyu Huang/8_Data_Science/Factiva_News_Project/data/results/rulebased_tagging",
-                            "Q:/DATA/SPRAI/Chengyu Huang/8_Data_Science/Factiva_News_Project/data/results/tpu_tagging"
+                            "Q:/DATA/SPRAI/Chengyu Huang/8_Data_Science/Factiva_News_Project/data/results/tpu_tagging", 
                         ],
                         help='Input directories containing files to merge')
     
     parser.add_argument('--output-dir',
-                        default="Q:/DATA/SPRAI/Chengyu Huang/8_Data_Science/Factiva_News_Project/data/results/merged/TPU",
+                        default="Q:/DATA/SPRAI/Chengyu Huang/8_Data_Science/Factiva_News_Project/data/results/merged/TPU_New",
                         help='Output directory for merged files')
     
     return parser.parse_args(args)
 #%%
 if __name__ == "__main__":
 
-    args = parse_arguments(['--skip-merge'])
+    args = parse_arguments([])
     # Setup directories
     dirs = args.input_dirs
     output_dir = args.output_dir
@@ -186,7 +187,9 @@ if __name__ == "__main__":
         file_groups = merger.discover_merge_files()
         print(f"Found {len(file_groups)} file groups")
         # Step 2: Merge files using 'id' field (this will save individual files)
-        merged_results = merger.merge_files(file_groups, id_field="id")
+        merged_results = merger.merge_files(file_groups, id_field="id",
+                                            n_jobs=8,
+                                            append_merge_results=False)
         print(f"Merged results saved to individual files in: {output_dir}")
    
     # Step 3: Load and aggregate all merged files into a single DataFrame

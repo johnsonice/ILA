@@ -129,6 +129,7 @@ class Tag_Result_Merger:
                     file_groups: List[Tuple[Path, ...]], 
                     id_field: str = "id",
                     save_disaggregrated_files: bool = True,
+                    append_merge_results: bool = False,
                     n_jobs: int = -1,
                     verbose: int = 5) -> List[Dict]:
         """Merge JSON files from file groups using the specified ID field, with parallel processing.
@@ -168,7 +169,10 @@ class Tag_Result_Merger:
                     logger.error(f"Error saving merged group {idx}: {e}")
                     return None
             else:
-                return merged
+                if append_merge_results:
+                    return merged
+                else:   
+                    return {'group_index': idx, 'records': "skip to save memory"}  # Placeholder to save memory
 
         # Run in parallel
         results = Parallel(n_jobs=n_jobs, verbose=verbose)(
@@ -180,11 +184,15 @@ class Tag_Result_Merger:
 
         if save_disaggregrated_files:
             logger.info(f"✅ Saved {len(results)}/{total} merged groups to {self.output_dir}")
-            return results
-        else:
+        
+        if append_merge_results:
             total_records = sum(len(group['records']) for group in results)
             logger.info(f"✅ Merged {len(results)} groups, {total_records} total records")
             return results
+        else:
+            logger.info(f"✅ Processed {len(results)} groups, results contain file index only to save memory")
+            return results
+            
     
     def _merge_single_group(self, file_group: Tuple[Path, ...], id_field: str, group_index: int) -> Dict:
         """Merge a single group of files."""
@@ -236,6 +244,7 @@ class Tag_Result_Merger:
             
         except Exception as e:
             logger.error(f"Error loading {file_path}: {e}")
+            raise(e)
             return None
     
     def save_merged_results(self, merged_results: List[Dict], filename: str = None) -> Path:

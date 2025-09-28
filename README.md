@@ -184,45 +184,6 @@ Advanced pattern matching system for detecting trade policy uncertainty in news 
 - **Uncertainty Terms**: volatility, concerns, risks, threats, ambiguity (80+ terms)
 - **Output**: `ILA_TPU_Flag` (boolean) and `ILA_TPU_Reference` (context snippet)
 
-## 📊 Performance Benchmarks
-
-Based on testing with 88,861 articles in the `factiva` environment:
-
-### Search Performance
-- **Regular Search**: 7.32 seconds for "Germany" (3,056 results)
-- **Index Creation**: 0.01 seconds for 10K articles
-- **Indexed Search**: 0.0001 seconds for same query
-- **Speedup**: **70,000x faster** with indexing!
-
-### Search Index Statistics
-- **Unique Countries**: 893 countries indexed
-- **Top Countries**: United States (36,314), Spain (17,411), China (16,118)
-- **Index Size**: Compact JSON format for persistent storage
-
-### Multi-Country Search Results
-- **Spain OR France OR Germany**: 23,983 articles found in 7.35 seconds
-- **Advanced Matching**: Partial match "United" finds all "United States", "United Kingdom" variants
-- **Case Sensitivity**: "china" (case-sensitive) vs "China" (case-insensitive) handling
-
-## 💡 Usage Examples
-
-### Loading and Advanced Search
-```python
-# Load enhanced articles
-articles = load_enhanced_articles()
-
-# Multi-country search with exact matching
-results = search_articles_by_country('', articles, 
-                                    multiple_countries=['Spain', 'France', 'Italy'])
-
-# Partial matching for compound names
-uk_articles = search_articles_by_country('Kingdom', articles, match_mode='partial')
-
-# Ultra-fast indexed search
-country_index = get_country_search_index(articles)
-fast_results = search_articles_by_country_indexed('Germany', country_index, articles)
-```
-
 ### Performance Optimization Workflow
 ```python
 # Create index once
@@ -289,34 +250,6 @@ python src/TPU/TPU_tagging.py \
   --task_id custom_tpu_analysis \
   --strip_text
 ```
-
-## ✅ Quality Assurance
-
-The system includes comprehensive quality checks:
-- **ID Validation**: Ensures all articles have valid IDs
-- **Duplicate Detection**: Identifies and reports duplicate IDs
-- **Content Integrity**: Validates that original content is preserved
-- **Coverage Analysis**: Reports on merge success rates (96.4% coverage achieved)
-- **Performance Validation**: Benchmarking tools for optimization verification
-
-## 🎯 Design Principles
-
-1. **High Performance**: Indexed searches up to 70,000x faster than linear search
-2. **Modularity**: Functions return data rather than just printing
-3. **Flexibility**: Multiple search modes and filtering options
-4. **Reproducibility**: Seeded random operations and deterministic results
-5. **Scalability**: Optimized for datasets with 100K+ articles
-6. **Usability**: Both CLI and notebook interfaces with comprehensive help
-
-## 🔄 Workflow Integration
-
-This tool integrates seamlessly with the existing LLM processing pipeline:
-1. Raw articles are processed by `extract_country_name.py`
-2. LLM results are generated and saved with IDs
-3. This merger combines the datasets with 100% success rate
-4. **TPU Detection**: Articles are analyzed for trade policy uncertainty using `TPU_tagging.py`
-5. Enhanced articles support ultra-fast search and analysis
-6. Search indexes enable real-time query performance
 
 ### Complete Processing Pipeline
 ```bash
