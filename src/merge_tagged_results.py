@@ -19,6 +19,7 @@ from collections import Counter
 import random
 from tqdm import tqdm
 from joblib import Parallel, delayed
+from tenacity import retry, stop_after_attempt, wait_fixed
 
 # Setup logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -230,8 +231,9 @@ class Tag_Result_Merger:
             if key != id_field:
                 target_record[key] = value
 
+    @retry(stop=stop_after_attempt(3), wait=wait_fixed(5))
     def _load_json_file(self, file_path: Path) -> List[Dict]:
-        """Load and validate JSON file."""
+        """Load and validate JSON file with retry logic using tenacity."""
         try:
             with open(file_path, 'r', encoding='utf-8') as f:
                 data = json.load(f)
@@ -243,9 +245,8 @@ class Tag_Result_Merger:
             return data
             
         except Exception as e:
-            logger.error(f"Error loading {file_path}: {e}")
-            raise(e)
-            return None
+            logger.warning(f"Error loading {file_path}: {e}")
+            raise  # Let tenacity handle the retry
     
     def save_merged_results(self, merged_results: List[Dict], filename: str = None) -> Path:
         """

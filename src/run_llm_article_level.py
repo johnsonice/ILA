@@ -40,8 +40,11 @@ import asyncio
 import warnings
 from pathlib import Path
 from typing import List, Dict, Any, Tuple, Callable, Type
-
+# Set up logger
+import logging
+logger = logging.getLogger(__name__)
 import nest_asyncio
+
 from tqdm import tqdm
 from pydantic import BaseModel
 
@@ -68,10 +71,9 @@ for subdir in (PROJECT_ROOT, LIBS_DIR):
 # ---------------------------------------------------------------------------
 # Local imports (resolved after sys.path modification)
 # ---------------------------------------------------------------------------
-
 from llm_factory_openai import BatchAsyncLLMAgent  # type: ignore
 from prompt_utils import load_prompt, format_messages  # type: ignore
-from utils import read_json  # type: ignore
+from utils import read_json, filter_unprocessed_files  # type: ignore
 from prompts.schemas import PROMPT_REGISTRY  # noqa: E402  (after path tweaks)
 
 # ---------------------------------------------------------------------------
@@ -161,55 +163,67 @@ def _merge_ids_with_responses(ids: List[str], responses: List[Any]) -> List[Dict
 if __name__ == "__main__":
     import argparse
 
+
     os.environ["TOKENIZERS_PARALLELISM"] = "false"  # silence HF fork warning
 
     parser = argparse.ArgumentParser(description="Generic LLM information extraction")
-    parser.add_argument("--task", type=str, default="country_identification", help="Task name as defined in prompts.schemas.PROMPT_REGISTRY")
-    parser.add_argument("--data_dir", type=str, default="/ephemeral/home/xiong/data/Fund/Factiva_News/2025", help="Directory containing input article JSON files")
+    parser.add_argument("--task_id", type=str, default="country_identification", help="Task name as defined in prompts.schemas.PROMPT_REGISTRY")
+    parser.add_argument("--data_dir", type=str, default="/ephemeral/home/xiong/data/Fund/Factiva_News", help="Directory containing input article JSON files")
     parser.add_argument("--output_dir", type=str, default="/ephemeral/home/xiong/data/Fund/Factiva_News/results", help="Directory to write output JSON files")
-    parser.add_argument("--test", action="store_true", help="Process only first JSON and first 20 articles")
+    parser.add_argument("--run_tests", action="store_true", help="Process only first JSON and first 20 articles")
     parser.add_argument("--batch_size", type=int, default=1280, help="Number of messages per LLM batch call")
     parser.add_argument("--max_tokens", type=int, default=4000, help="max_tokens argument passed to LLM completions")
+    parser.add_argument("--model_args", type=str, default="./llm_args/netmind_qwen3_8b.json", help="Path to JSON file with model arguments")
+    parser.add_argument("--api_key", type=str, default=None, help="API key for LLM service (overrides model_args if provided)")
+
     args = parser.parse_args()
 
-    if args.task not in PROMPT_REGISTRY:
-        raise ValueError(f"Unknown task '{args.task}'. Available: {list(PROMPT_REGISTRY.keys())}")
+    if args.task_id not in PROMPT_REGISTRY:
+        raise ValueError(f"Unknown task '{args.task_id}'. Available: {list(PROMPT_REGISTRY.keys())}")
 
-    prompt_file = PROMPT_REGISTRY[args.task]["prompt_file"]  # markdown template filename
-    response_model = PROMPT_REGISTRY[args.task]["response_model"]  # pydantic schema enforcing the response structure
+    prompt_file = PROMPT_REGISTRY[args.task_id]["prompt_file"]  # markdown template filename
+    response_model = PROMPT_REGISTRY[args.task_id]["response_model"]  # pydantic schema enforcing the response structure
 
     # Resolve prompt path and load template
     prompt_path = PROMPTS_DIR / prompt_file
     prompt_template = load_prompt(str(prompt_path)).sections
 
     # Ensure output directory exists
-    os.makedirs(args.output_dir, exist_ok=True)
+    output_dir = Path(args.output_dir) / args.task_id
+    output_dir.mkdir(parents=True, exist_ok=True)
 
     # Instantiate LLM agent (here pointing at a local sglang-backed Qwen server).
     # You can change `local_model_args` or parameterise them via CLI flags if
     # you wish to query a different endpoint or model.
-    local_model_args = {
-        "model": "Qwen/Qwen3-8B",
-        "base_url": "http://localhost:8102/v1",
-        "temperature": 0,
-        "api_key": "abc",
-    }
+    
+    local_model_args = read_json(args.model_args)
+    if not local_model_args or not isinstance(local_model_args, dict):
+        raise ValueError(f"Failed to load model arguments from {args.model_args}. Check if the file exists and contains valid JSON.")
+    if args.api_key:
+        local_model_args["api_key"] = args.api_key
+        
     batch_agent = BatchAsyncLLMAgent(**local_model_args)
     asyncio.run(batch_agent.test_connection())
 
     start_time = time.time()
 
-    json_files = sorted(glob.glob(os.path.join(args.data_dir, "*.json")))
-    if args.test:
-        json_files = json_files[:1]
+    #json_files = sorted(glob.glob(os.path.join(args.data_dir, "*.json")))
+    data_dir = Path(args.data_dir)
+    json_files = list(data_dir.rglob("*.json"))
+    print(f"Found {len(json_files)} JSON files in {args.data_dir}")
+    json_files = filter_unprocessed_files(json_files, output_dir, args.task_id, verbose=True)
+    
+    
+    if args.run_tests:
+        json_files = json_files[:10]
 #%%
     for json_file in tqdm(json_files, desc="Processing JSON files", unit="file"):
         print(f"Processing file: {json_file}")
         articles: List[Dict[str, Any]] = read_json(json_file)
-        if args.test:
+        if args.run_tests:
             articles = articles[:20]
         if not articles:
-            print(f"  No articles found in {json_file}, skipping.")
+            print(f"No articles found in {json_file}, skipping.")
             continue
 
         batch_messages, batch_ids = _build_batch_messages_from_articles(articles, prompt_template)
@@ -227,11 +241,11 @@ if __name__ == "__main__":
         assert len(batch_ids) == len(responses)
         merged_results = _merge_ids_with_responses(batch_ids, responses)
 
-        # Persist results using <input>_<task>_llm.json naming convention so
+        # Persist results using <input>_<task>.json naming convention so
         # multiple tasks can be run on the same article corpus without file
         # collisions.
         base_filename = os.path.splitext(os.path.basename(json_file))[0]
-        output_file = os.path.join(args.output_dir, f"{base_filename}_{args.task}_llm.json")
+        output_file = os.path.join(output_dir, f"{base_filename}_{args.task_id}.json")
         with open(output_file, "w", encoding="utf-8") as f:
             json.dump(merged_results, f, ensure_ascii=False, indent=2)
         print(f"Results saved to {output_file}")

@@ -166,8 +166,8 @@ def filter_unprocessed_files(json_files, export_dir, task_id, verbose=True):
         return json_files
     
     # Get existing output files that contain the task_id
-    existing_csv_files = set(export_dir_path.glob(f"*{task_id}*.csv"))
-    existing_json_files = set(export_dir_path.glob(f"*{task_id}*.json"))
+    existing_csv_files = set(export_dir_path.rglob(f"*{task_id}*.csv"))
+    existing_json_files = set(export_dir_path.rglob(f"*{task_id}*.json"))
     
     # Extract base names from existing files
     processed_stems = set()

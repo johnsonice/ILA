@@ -14,7 +14,7 @@ Respond **only** in JSON with following keys:
 {
   "sentiment_label": "strong negative | moderate negative | neutral | moderate positive | strong positive",
   "tone_score": -5.0 to 5.0,
-  "justification": "<Brief explanation of key phrases that influenced your decision>"
+  "justification": "<Very brief explanation of key phrases that influenced your decision>"
 }
 ```
 

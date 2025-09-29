@@ -1,5 +1,5 @@
 
-from typing import List, Optional, Dict, Type
+from typing import List, Optional, Dict, Type, Literal
 from pydantic import BaseModel, Field
 
 class CountryIdentificationResponse(BaseModel):
@@ -33,11 +33,9 @@ class SentimentAnalysisResponse(BaseModel):
     )
 class TenseExtractionResponse(BaseModel):
     """Schema for tense_extraction prompt."""
-    tense: str = Field(
+    tense: Literal["Past", "Present", "Future"] = Field(
         ...,
-        description="Temporal context of the sentence: Past, Present, or Future.",
-        pattern="^(Past|Present|Future)$",
-        max_length=20,
+        description="Temporal context of the sentence: Past, Present, or Future."
     )
 class ProductCategoriesResponse(BaseModel):
     """Schema for product_categories prompt."""
@@ -59,11 +57,9 @@ class BroadPolicyCategoriesResponse(BaseModel):
     )
 class MeasureNatureResponse(BaseModel):
     """Schema for measure_nature prompt."""
-    result: str = Field(
+    result: Literal["Liberalising", "Distortive", "Other"] = Field(
         ...,
-        description="Nature of the measure: Liberalising, Distortive, or Other.",
-        pattern="^(Liberalising|Distortive|Other)$",
-        max_length=40,
+        description="One of: Liberalising, Distortive, Other."
     )
 class TimelineExtractionResponse(BaseModel):
     """Schema for timeline_extraction prompt."""
@@ -90,6 +86,19 @@ class InterventionTypeResponse(BaseModel):
         default_factory=list,
         description="List of intervention type descriptors present in the sentence.",
     )
+
+class NewsScopeClassificationResponse(BaseModel):
+    """Schema for news_scope_identification prompt."""
+    justification: str = Field(
+        ...,
+        description="Very brief explanation of key reasons that influenced the classification decision.",
+        max_length=400,
+    )
+    classification: Literal["Local News", "International News"] = Field(
+        ...,
+        description="Classification of the news article scope: 'Local News' or 'International News'."
+    )
+
 
 
 # -----------------------------------------------------------------------------
@@ -140,5 +149,9 @@ PROMPT_REGISTRY: Dict[str, Dict[str, object]] = {
     "intervention_type": {
         "prompt_file": "intervention_type.md",
         "response_model": InterventionTypeResponse,
+    },
+    "news_scope_classification": {
+        "prompt_file": "news_scope_identification.md",
+        "response_model": NewsScopeClassificationResponse,
     },
 }

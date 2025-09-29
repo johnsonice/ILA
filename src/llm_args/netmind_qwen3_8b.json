@@ -1,0 +1,6 @@
+{
+"model":"Qwen/Qwen3-8B",
+"base_url":"https://api.netmind.ai/inference-api/openai/v1",
+"temperature":0.0,
+"api_key":""
+}

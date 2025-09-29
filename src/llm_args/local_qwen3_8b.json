@@ -1,0 +1,6 @@
+{
+    "model": "Qwen/Qwen3-8B",
+    "base_url": "http://localhost:8102/v1",
+    "temperature": 0,
+    "api_key": "abc"
+}
