@@ -89,6 +89,13 @@ class InterventionTypeResponse(BaseModel):
 
 class NewsScopeClassificationResponse(BaseModel):
     """Schema for news_scope_identification prompt."""
+    classification: Literal["Local News", "International News"] = Field(
+        ...,
+        description="Classification of the news article scope: 'Local News' or 'International News'."
+    )
+
+class NewsScopeClassificationResponseCot(BaseModel):
+    """Schema for news_scope_identification prompt."""
     justification: str = Field(
         ...,
         description="Very brief explanation of key reasons that influenced the classification decision.",
@@ -98,8 +105,6 @@ class NewsScopeClassificationResponse(BaseModel):
         ...,
         description="Classification of the news article scope: 'Local News' or 'International News'."
     )
-
-
 
 # -----------------------------------------------------------------------------
 # Registry mapping each prompt template name to its Markdown file and schema.
@@ -153,5 +158,9 @@ PROMPT_REGISTRY: Dict[str, Dict[str, object]] = {
     "news_scope_classification": {
         "prompt_file": "news_scope_identification.md",
         "response_model": NewsScopeClassificationResponse,
+    },
+    "news_scope_classification_cot": {
+        "prompt_file": "news_scope_identification_cot.md",
+        "response_model": NewsScopeClassificationResponseCot,
     },
 }
