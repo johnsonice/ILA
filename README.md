@@ -1,4 +1,4 @@
-# LLM Results Merger - Optimized Utility
+# GenAI-Powered Intelligent Language Agents (ILA) for IMF Surveillance
 
 A comprehensive, high-performance modular system for merging LLM-extracted country information back to original raw news articles using article IDs, with advanced search capabilities and quality checking.
 
