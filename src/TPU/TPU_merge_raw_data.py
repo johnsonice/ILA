@@ -21,6 +21,7 @@ logger = logging.getLogger(__name__)
 
 def load_and_aggregate_json_files(output_dir: str, 
                                   file_pattern: str = "*.json",
+                                  keep_fields: list | None = None,
                                   verbose: bool = True) -> pd.DataFrame:
     """
     Load JSON files from output directory, aggregate all records, and convert to DataFrame.
@@ -38,8 +39,8 @@ def load_and_aggregate_json_files(output_dir: str,
     Returns:
         pd.DataFrame: Aggregated and cleaned DataFrame
     """
-    # Step 1: Load all JSON files and aggregate records
-    all_records = _load_json_files(output_dir, file_pattern, verbose)
+    # Step 1: Load all JSON files and aggregate records (only keep requested fields)
+    all_records = _load_json_files(output_dir, file_pattern, keep_fields=keep_fields, verbose=verbose)
     
     if not all_records:
         logger.warning("No records found in any files")
@@ -58,8 +59,13 @@ def load_and_aggregate_json_files(output_dir: str,
 
 def _load_json_files(output_dir: str, 
                      file_pattern: str = "*.json", 
+                     keep_fields: list | None = None,
                      verbose: bool = True) -> list:
-    """Load and aggregate all JSON files matching the pattern."""
+    """Load and aggregate all JSON files matching the pattern.
+
+    When `keep_fields` is provided, only those keys are extracted from each record to
+    minimise memory usage while aggregating large numbers of JSON files.
+    """
     output_path = Path(output_dir)
     
     if not output_path.exists():
@@ -74,6 +80,8 @@ def _load_json_files(output_dir: str,
         logger.info(f"Found {len(json_files)} JSON files to process")
     all_records = []
     for file_path in tqdm(json_files, desc="Loading JSON files"):
+        if verbose:
+            logger.info(f"Processing file: {file_path.name}")
         try:
             with open(file_path, 'r', encoding='utf-8') as f:
                 data = json.load(f)
@@ -83,10 +91,18 @@ def _load_json_files(output_dir: str,
             elif not isinstance(data, list):
                 logger.warning(f"Unexpected data format in {file_path.name}")
                 continue
-            # Add records to the list
-            for record in data:
-                if isinstance(record, dict):
-                    all_records.append(record)
+
+            # If keep_fields is provided, only extract those keys per record to save memory
+            if keep_fields:
+                for record in data:
+                    if isinstance(record, dict):
+                        filtered = {k: record.get(k, None) for k in keep_fields}
+                        all_records.append(filtered)
+            else:
+                for record in data:
+                    if isinstance(record, dict):
+                        all_records.append(record)
+
         except Exception as e:
             logger.error(f"Error loading {file_path.name}: {e}")
             continue
@@ -166,19 +182,19 @@ def parse_arguments(args=None):
                         help='Input directories containing files to merge')
     
     parser.add_argument('--output-dir',
-                        default="Q:/DATA/SPRAI/Chengyu Huang/8_Data_Science/Factiva_News_Project/data/results/merged/TPU_New",
+                        default="Q:/DATA/SPRAI/Chengyu Huang/8_Data_Science/Factiva_News_Project/data/results/merged/TPU_new",
                         help='Output directory for merged files')
     
     return parser.parse_args(args)
 #%%
 if __name__ == "__main__":
 
-    args = parse_arguments([])
+    args = parse_arguments()
     # Setup directories
     dirs = args.input_dirs
     output_dir = args.output_dir
     os.makedirs(output_dir, exist_ok=True)
-
+#%%
     if not args.skip_merge:
         # Initialize merger
         merger = Tag_Result_Merger(tag_results_dirs=dirs, 
@@ -196,11 +212,20 @@ if __name__ == "__main__":
     print("\n" + "="*50)
     print("Loading and aggregating all merged files...")
     print("="*50)
-    
+    #%%
     # Use the new function to load, aggregate, and clean the data
+    # Only keep the fields used by `src/TPU/TPU.ipynb` to save memory
     df = load_and_aggregate_json_files(
         output_dir=output_dir,
         file_pattern="*.json",
+        keep_fields=[
+            'id',  # article identifier
+            'an',  # alternate id (some files use 'an')
+            'ILA_publication_date',
+            'publication_date',
+            'ILA_TPU_Flag',
+            'ILA_RulebasedCountryTag'
+        ],
         verbose=True
     )
 
