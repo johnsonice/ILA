@@ -189,7 +189,8 @@ def parse_arguments(args=None):
 #%%
 if __name__ == "__main__":
 
-    args = parse_arguments()
+    args = parse_arguments() #['--skip-merge']
+    print("Arguments:", args)
     # Setup directories
     dirs = args.input_dirs
     output_dir = args.output_dir
@@ -221,6 +222,9 @@ if __name__ == "__main__":
         keep_fields=[
             'id',  # article identifier
             'an',  # alternate id (some files use 'an')
+            'industry_codes',
+            'language_code',
+            'word_count',
             'ILA_publication_date',
             'publication_date',
             'ILA_TPU_Flag',
@@ -229,9 +233,9 @@ if __name__ == "__main__":
         verbose=True
     )
 
-    df.to_pickle( Path(output_dir) / '../TPU_aggregated_data.pkl')
-    df.to_csv( Path(output_dir) / '../TPU_aggregated_data.csv')
-    print(f"Aggregated data saved to: {Path(output_dir) / '../TPU_aggregated_data.pkl'} and .csv")
+    df.to_pickle( Path(output_dir) / '../TPU_aggregated_data_v2.pkl')
+    df.to_csv( Path(output_dir) / '../TPU_aggregated_data_v2.csv')
+    print(f"Aggregated data saved to: {Path(output_dir) / '../TPU_aggregated_data_v2.pkl'} and .csv")
 
 
 # %%
